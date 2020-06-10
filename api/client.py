@@ -97,6 +97,7 @@ def call(call, method="GET", **kwargs):
 	elif method == "GET":
 		out = six.moves.urllib.request.urlopen(req, timeout = TIMEOUT).read()
 	else:
+		# Encoding specified manually for urlargs with six. Not specifying breaks cross-compatibility.
 		out = six.moves.urllib.request.urlopen(req, six.b(urlargs), timeout = TIMEOUT).read()
 
 	try:
@@ -108,7 +109,6 @@ def call(call, method="GET", **kwargs):
 		print("Error: %s"%out['error'])
 
 	if PRESS_KEY_AFTER_CALL:
-		#eval(input("API Call Complete (press enter to continue)"))
 		input("API Call Complete (press enter to continue)")
 		print("")
 

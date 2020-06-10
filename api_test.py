@@ -1,7 +1,3 @@
-# from __future__ import absolute_import
-# from __future__ import print_function
-#from builtins import input
-from six.moves import input
 msg="""
 *****************************************************************************
 *                                                                           *
@@ -21,7 +17,7 @@ What you will need:
   code corresponding to this program.
 
 """
-
+from six.moves import input
 import pprint
 import os
 import sys
@@ -105,9 +101,7 @@ if __name__ == "__main__":
     print(msg)
     if not username or password:
         print("Enter your Docket Alarm username (your email) and password.")
-        #username = eval(input("Username: "))
         username = input("Username: ")
-        #password = eval(input("Password: "))
         password = input("Password: ")
         
     do_getdocket, do_search, do_track_test = True, True, False
