@@ -52,3 +52,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Backup files from conversion with six and future
+*.bak
+
+# VSCode Configuration
+.vscode
