@@ -17,12 +17,12 @@ What you will need:
   code corresponding to this program.
 
 """
-
+from six.moves import input
 import pprint
 import os
 import sys
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import logging
 
 # This if statemetn is only really used internally or if you're using it in a 
@@ -94,15 +94,15 @@ part_no = 1
 def print_title(msg):
     global part_no
     print("\n\n---------------------------------")
-    print("Part %d: %s"%(part_no, msg))
+    print(("Part %d: %s"%(part_no, msg)))
     part_no += 1
 
 if __name__ == "__main__":
     print(msg)
     if not username or password:
         print("Enter your Docket Alarm username (your email) and password.")
-        username = raw_input("Username: ")
-        password = raw_input("Password: ")
+        username = input("Username: ")
+        password = input("Password: ")
         
     do_getdocket, do_search, do_track_test = True, True, False
     # do_getdocket, do_search, do_track_test = False, False, True

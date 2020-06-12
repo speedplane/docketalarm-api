@@ -1,9 +1,16 @@
+# from __future__ import absolute_import
+# from __future__ import print_function
+# from builtins import input
+# from builtins import str
+# from builtins import range
 import pprint
 import base64
-import urllib
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import json
 import shelve
+from six.moves import range
+from six.moves import input
 __version__ = '1.1'
 '''
 Docket Alarm Python API Client
@@ -42,7 +49,8 @@ def call(call, method="GET", **kwargs):
 
 
 	if PRESS_KEY_BEFORE_CALL:
-		raw_input("(press enter to continue)")
+		# eval(input("(press enter to continue)"))
+		input("(press enter to continue)")
 
 	# Prepare the URL and arguments
 	if USE_LOCAL:
@@ -65,8 +73,8 @@ def call(call, method="GET", **kwargs):
 			kwargs['login_token'] = ''
 
 	# Sort the keywords so they are applied consistently.
-	sorted_kw = sorted(kwargs.items(), key = lambda val: val[0])
-	urlargs = urllib.urlencode(sorted_kw, doseq=True)
+	sorted_kw = sorted(list(kwargs.items()), key = lambda val: val[0])
+	urlargs = six.moves.urllib.parse.urlencode(sorted_kw, doseq=True)
 
 	if method == "GET":
 		url = url + "?" + urlargs
@@ -78,7 +86,7 @@ def call(call, method="GET", **kwargs):
 			print("ARGUMENTS: %s"%pprint.pformat(urlargs))
 		
 	# Add an authorization header if provided.
-	req = urllib2.Request(url)
+	req = six.moves.urllib.request.Request(url)
 	if username and password:
 		auth = base64.encodestring('%s:%s' % (username, password)).strip()
 		req.add_header("Authorization", "Basic %s" % auth)
@@ -87,9 +95,10 @@ def call(call, method="GET", **kwargs):
 	if _INTERNAL_TESTING:
 		out = _INTERNAL_TESTING(method, url, urlargs)
 	elif method == "GET":
-		out = urllib2.urlopen(req, timeout = TIMEOUT).read()
+		out = six.moves.urllib.request.urlopen(req, timeout = TIMEOUT).read()
 	else:
-		out = urllib2.urlopen(req, urlargs, timeout = TIMEOUT).read()
+		# Encoding specified manually for urlargs with six. Not specifying breaks cross-compatibility.
+		out = six.moves.urllib.request.urlopen(req, six.b(urlargs), timeout = TIMEOUT).read()
 
 	try:
 		out = json.loads(out)
@@ -97,10 +106,10 @@ def call(call, method="GET", **kwargs):
 		raise Exception("Not JSON: " + out)    
 
 	if DEBUG and out and out.get('error'):
-		print "Error: %s"%out['error']
+		print("Error: %s"%out['error'])
 
 	if PRESS_KEY_AFTER_CALL:
-		raw_input("API Call Complete (press enter to continue)")
+		input("API Call Complete (press enter to continue)")
 		print("")
 
 	return out
@@ -109,7 +118,7 @@ def call(call, method="GET", **kwargs):
 ################################################################################
 #		Utilities and Time Saving Helper Functions
 import time, logging
-from Queue import Empty
+from six.moves.queue import Empty
 from multiprocessing import Process
 from multiprocessing import Pool as MultiProcessPool
 from multiprocessing import Queue as ProcessQueue
@@ -160,7 +169,7 @@ def _dl_worker(username, password, client_matter, cached, dlqueue, docketqueue):
 	
 def getdocket_parallel(username, password, client_matter, docket_list, 
 						cached = False, num_workers = 15,
-						save_progress = None, async = False):
+						save_progress = None, _async = False):
 	'''
 	Download a list of dockets in parallel by launching many processes.
 	
@@ -171,7 +180,7 @@ def getdocket_parallel(username, password, client_matter, docket_list,
 	async               If True, we get data asyncrhonously.
 	'''
 	if save_progress != None:
-		if async:
+		if _async:
 			raise NotImplementedError("Cannot save progress and async.")
 		save_progress = shelve.open(save_progress, 'c')
 	
@@ -242,7 +251,7 @@ def getdocket_parallel(username, password, client_matter, docket_list,
 		pool.close()
 		pool.terminate()
 
-	if async:
+	if _async:
 		return iterator
 
 	for new_i, new_docket in enumerate(iterator()):
@@ -332,7 +341,7 @@ def search_parallel(username, password, client_matter, q,
 	
 	# Put all of the search ranges into the result queue
 	dlqueue = ProcessQueue()
-	for i in xrange(num_first_page, num_results, SEARCH_RESULTS_AT_ONCE):
+	for i in range(num_first_page, num_results, SEARCH_RESULTS_AT_ONCE):
 		limit = min(num_results, i+SEARCH_RESULTS_AT_ONCE) - i
 		logging.info("Added: %s --> %s"%(i, i+limit))
 		dlqueue.put((i, limit))
@@ -357,7 +366,7 @@ def search_parallel(username, password, client_matter, q,
 					start, end, num_results))
 				got += 1
 			except Empty:
-				left = len(results) - len(filter(None, results))
+				left = len(results) - len([_f for _f in results if _f])
 				if left <= 0:
 					break
 				logging.info("Got %d, %d results. Waiting for %d more."%(
@@ -378,7 +387,7 @@ def search_parallel(username, password, client_matter, q,
 	
 	for i, r in enumerate(results):
 		if not r:
-			print "Missing Result %s"%(i+1)
+			print("Missing Result %s"%(i+1))
 		
 	
 	return {
