@@ -81,9 +81,9 @@ def call(call, method="GET", **kwargs):
 
 	# Allow for debug printing
 	if DEBUG:
-		print(("%s: %s"%(method, url)))
+		print("%s: %s"%(method, url))
 		if method == "POST":
-			print(("ARGUMENTS: %s"%pprint.pformat(urlargs)))
+			print("ARGUMENTS: %s"%pprint.pformat(urlargs))
 		
 	# Add an authorization header if provided.
 	req = six.moves.urllib.request.Request(url)
